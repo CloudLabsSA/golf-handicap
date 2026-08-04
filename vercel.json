@@ -1,0 +1,20 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "env": {
+    "POSTGRES_PRISMA_URL": {
+      "description": "Neon PostgreSQL connection string"
+    },
+    "RESEND_API_KEY": {
+      "description": "API key from Resend for email sending"
+    },
+    "JWT_SECRET": {
+      "description": "Secret key for JWT token signing"
+    },
+    "GOLF_COURSE_API_KEY": {
+      "description": "Optional: API key for GolfCourseAPI"
+    }
+  }
+}

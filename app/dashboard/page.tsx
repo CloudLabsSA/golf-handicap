@@ -90,6 +90,12 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-4">
             <Link
+              href="/players"
+              className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold transition"
+            >
+              Players
+            </Link>
+            <Link
               href="/rounds/new"
               className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg font-semibold transition"
             >
