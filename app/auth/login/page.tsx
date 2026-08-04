@@ -21,8 +21,10 @@ export default function LoginPage() {
         body: JSON.stringify({ email }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to send login link');
+        throw new Error(data.error || 'Failed to send login link');
       }
 
       setSent(true);
