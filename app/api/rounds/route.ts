@@ -13,7 +13,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { courseId, score, date, scorecard } = await request.json();
+    const { courseName, coursePar, score, date, holes = 18, scorecard } = await request.json();
+
+    if (!courseName || !coursePar || !score) {
+      return NextResponse.json(
+        { error: 'Course name, par, and score required' },
+        { status: 400 }
+      );
+    }
 
     // Get user
     const user = await db
@@ -26,15 +33,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Verify course exists
-    const course = await db
+    // Find or create course
+    let course = await db
       .select()
       .from(courses)
-      .where(eq(courses.id, courseId))
+      .where(eq(courses.name, courseName))
       .limit(1);
 
     if (!course.length) {
-      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+      const courseId = crypto.randomUUID();
+      await db.insert(courses).values({
+        id: courseId,
+        name: courseName,
+        par: coursePar,
+        holes,
+      });
+      course = await db.select().from(courses).where(eq(courses.id, courseId));
     }
 
     // Create round
@@ -42,7 +56,7 @@ export async function POST(request: NextRequest) {
     await db.insert(rounds).values({
       id: roundId,
       userId: user[0].id,
-      courseId,
+      courseId: course[0].id,
       score,
       date: new Date(date),
       scorecard: scorecard ? JSON.stringify(scorecard) : null,
@@ -57,7 +71,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newRound[0]);
   } catch (error) {
     console.error('Round creation error:', error);
-    return NextResponse.json({ error: 'Failed to create round' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to create round' },
+      { status: 500 }
+    );
   }
 }
 
