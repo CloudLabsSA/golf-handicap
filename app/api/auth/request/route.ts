@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const emailResult = await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: 'noreply@bandicap.co.za',
         to: email,
         subject: 'Your Golf Handicap Login Link',
         html: `
