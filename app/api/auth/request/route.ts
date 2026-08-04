@@ -42,26 +42,43 @@ export async function POST(request: NextRequest) {
     const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback?token=${token}`;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: email,
-      subject: 'Your Golf Handicap Login Link',
-      html: `
-        <h1>Sign in to Golf Handicap Tracker</h1>
-        <p>Click the link below to sign in to your account:</p>
-        <a href="${loginUrl}" style="background: #2d5016; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-          Sign In
-        </a>
-        <p>Or copy this link: ${loginUrl}</p>
-        <p>This link expires in 24 hours.</p>
-      `,
-    });
 
-    return NextResponse.json({ success: true });
+    try {
+      const emailResult = await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: email,
+        subject: 'Your Golf Handicap Login Link',
+        html: `
+          <h1>Sign in to Golf Handicap Tracker</h1>
+          <p>Click the link below to sign in to your account:</p>
+          <a href="${loginUrl}" style="background: #2d5016; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            Sign In
+          </a>
+          <p>Or copy this link: ${loginUrl}</p>
+          <p>This link expires in 24 hours.</p>
+        `,
+      });
+
+      if (emailResult.error) {
+        console.error('Resend error:', emailResult.error);
+        return NextResponse.json(
+          { error: `Email failed: ${emailResult.error.message}` },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ success: true });
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      return NextResponse.json(
+        { error: `Email error: ${emailError instanceof Error ? emailError.message : 'Unknown error'}` },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Auth request error:', error);
     return NextResponse.json(
-      { error: 'Failed to send login email' },
+      { error: `Auth error: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
