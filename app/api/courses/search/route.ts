@@ -27,20 +27,31 @@ export async function GET(request: NextRequest) {
 
     // Then fetch from external API
     try {
-      const response = await fetch(
-        `https://api.golfcourseapi.com/courses?name=${encodeURIComponent(query)}&country=${country}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${process.env.GOLF_COURSE_API_KEY}`,
-          },
-        }
-      );
+      if (!process.env.GOLF_COURSE_API_KEY) {
+        console.warn('GOLF_COURSE_API_KEY not configured');
+        return NextResponse.json({ courses: [] });
+      }
+
+      const apiUrl = `https://api.golfcourseapi.com/courses?name=${encodeURIComponent(query)}&country=${country}`;
+      console.log('Calling golf course API:', apiUrl);
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${process.env.GOLF_COURSE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('API response status:', response.status);
 
       if (!response.ok) {
-        throw new Error('API error');
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
+        throw new Error(`API error: ${response.status} ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('API data:', data);
 
       // Save to database for future lookups
       if (data.courses && Array.isArray(data.courses)) {
@@ -73,8 +84,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ courses: data.courses || [] });
     } catch (apiError) {
       console.error('Golf Course API error:', apiError);
-      // Return empty array if external API fails
-      return NextResponse.json({ courses: localCourses });
+      // Return error message for debugging
+      return NextResponse.json({
+        courses: localCourses,
+        error: apiError instanceof Error ? apiError.message : 'API error',
+      });
     }
   } catch (error) {
     console.error('Course search error:', error);
