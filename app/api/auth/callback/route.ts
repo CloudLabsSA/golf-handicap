@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const token = request.nextUrl.searchParams.get('token');
 
     if (!token) {
-      return NextResponse.redirect(new URL('/auth/login?error=missing_token', request.url));
+      return NextResponse.json({ error: 'Missing token' }, { status: 400 });
     }
 
     // Find and verify token
@@ -25,14 +25,14 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (!authToken.length) {
-      return NextResponse.redirect(new URL('/auth/login?error=invalid_token', request.url));
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const { email, expiresAt, id } = authToken[0];
 
     // Check expiry
     if (new Date() > expiresAt) {
-      return NextResponse.redirect(new URL('/auth/login?error=expired_token', request.url));
+      return NextResponse.json({ error: 'Token expired' }, { status: 401 });
     }
 
     // Mark token as used
@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
     // Generate JWT
     const jwt = generateJWT(email);
 
-    // Redirect to home with JWT
-    const response = NextResponse.redirect(new URL('/dashboard', request.url));
+    // Return success with JWT to be set as cookie by client
+    const response = NextResponse.json({ success: true, email });
     response.cookies.set('auth_token', jwt, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -73,6 +73,9 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Auth callback error:', error);
-    return NextResponse.redirect(new URL('/auth/login?error=server_error', request.url));
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Callback failed' },
+      { status: 500 }
+    );
   }
 }
