@@ -11,25 +11,26 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@vercel/postgres": "latest",
+    "drizzle-kit": "latest",
+    "drizzle-orm": "latest",
+    "jsonwebtoken": "latest",
+    "lucide-react": "latest",
+    "next": "^15.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "next": "^15.0.0",
-    "@vercel/postgres": "latest",
-    "drizzle-orm": "latest",
-    "drizzle-kit": "latest",
-    "resend": "latest",
-    "jsonwebtoken": "latest",
-    "lucide-react": "latest"
+    "resend": "latest"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.10.6",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.16",
+    "eslint": "^8.55.0",
+    "eslint-config-next": "^15.0.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.1",
-    "eslint": "^8.55.0",
-    "eslint-config-next": "^15.0.0"
+    "typescript": "^5.3.3"
   }
 }

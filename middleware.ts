@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyJWT } from '@/lib/auth';
 
+export const runtime = 'nodejs'; // Use Node.js runtime for crypto support
+
 const publicPaths = ['/', '/auth/login', '/auth/callback', '/players'];
 
 export function middleware(request: NextRequest) {

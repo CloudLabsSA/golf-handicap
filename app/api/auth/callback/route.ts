@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, authTokens, users } from '@/lib/db';
 import { generateJWT } from '@/lib/auth';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import crypto from 'crypto';
 
 export async function GET(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       .where(
         and(
           eq(authTokens.token, token),
-          eq(authTokens.usedAt, null)
+          isNull(authTokens.usedAt)
         )
       )
       .limit(1);

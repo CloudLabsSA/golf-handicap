@@ -5,9 +5,10 @@ import { calculateHandicapIndex } from '@/lib/handicap';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { email: string } }
+  context: { params: Promise<{ email: string }> }
 ) {
   try {
+    const params = await context.params;
     const email = decodeURIComponent(params.email);
 
     // Get user

@@ -5,8 +5,6 @@ import { eq } from 'drizzle-orm';
 import { Resend } from 'resend';
 import crypto from 'crypto';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
@@ -15,6 +13,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Valid email required' },
         { status: 400 }
+      );
+    }
+
+    // Check for API key
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY not configured');
+      return NextResponse.json(
+        { error: 'Email service not configured' },
+        { status: 500 }
       );
     }
 
@@ -34,8 +41,9 @@ export async function POST(request: NextRequest) {
     // Send email with magic link
     const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback?token=${token}`;
 
+    const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
-      from: 'noreply@golfhandicap.app',
+      from: 'noreply@resend.com',
       to: email,
       subject: 'Your Golf Handicap Login Link',
       html: `

@@ -19,10 +19,8 @@ interface PlayerProfile {
   }>;
 }
 
-export default function PlayerProfilePage({
-  params,
-}: {
-  params: { email: string };
+export default function PlayerProfilePage(props: {
+  params: Promise<{ email: string }>;
 }) {
   const [player, setPlayer] = useState<PlayerProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,8 +29,9 @@ export default function PlayerProfilePage({
   useEffect(() => {
     async function fetchPlayer() {
       try {
-        const email = decodeURIComponent(params.email);
-        const response = await fetch(`/api/users/${encodeURIComponent(email)}`);
+        const params = await props.params;
+        const decodedEmail = decodeURIComponent(params.email);
+        const response = await fetch(`/api/users/${encodeURIComponent(decodedEmail)}`);
         if (!response.ok) throw new Error('Player not found');
         const data = await response.json();
         setPlayer(data);
@@ -44,7 +43,7 @@ export default function PlayerProfilePage({
     }
 
     fetchPlayer();
-  }, [params.email]);
+  }, [props.params]);
 
   if (loading) {
     return (
