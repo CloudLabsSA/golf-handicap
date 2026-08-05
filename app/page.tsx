@@ -9,81 +9,110 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
+      {/* Navigation */}
+      <header className="border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Bandicap</h1>
+          {payload ? (
+            <Link
+              href="/dashboard"
+              className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
+      </header>
+
       {/* Hero */}
-      <div className="bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 dark:from-emerald-900 dark:via-green-900 dark:to-teal-900 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-24 text-center">
-          <div className="mb-2 text-emerald-100">⛳</div>
-          <h1 className="text-6xl font-bold mb-4">Bandicap</h1>
-          <p className="text-xl text-emerald-50 mb-8 max-w-2xl mx-auto">
-            Track your golf scores and calculate your handicap using official SAGA rules. Simple, accurate, and always with you.
+      <div className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-4xl mx-auto px-4 py-24">
+          <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            Golf Handicap Tracking
+          </h2>
+          <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-2xl">
+            Track your rounds and maintain your handicap using official SAGA calculations. Accurate, reliable, always available.
           </p>
 
           {payload ? (
             <Link
               href="/dashboard"
-              className="inline-block bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-3 rounded-lg font-semibold transition shadow-lg"
+              className="inline-block bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition"
             >
-              Go to Dashboard →
+              Go to Dashboard
             </Link>
           ) : (
             <Link
               href="/auth/login"
-              className="inline-block bg-white text-emerald-600 hover:bg-emerald-50 px-8 py-3 rounded-lg font-semibold transition shadow-lg"
+              className="inline-block bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition"
             >
-              Get Started →
+              Sign In
             </Link>
           )}
         </div>
       </div>
 
       {/* Features */}
-      <div className="max-w-6xl mx-auto px-4 py-24">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-8 hover:shadow-lg transition">
-            <div className="text-3xl mb-4">📊</div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-              Track Scores
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="grid md:grid-cols-2 gap-12">
+          <div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+              Score Recording
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Record your rounds in seconds. Supports 9 and 18 hole games.
+              Quickly record your rounds with course ratings and slope data. Supports 9 and 18 hole scoring.
             </p>
           </div>
 
-          <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-8 hover:shadow-lg transition">
-            <div className="text-3xl mb-4">🎯</div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-              SAGA Handicaps
+          <div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+              SAGA Compliant
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Official South African handicap calculations. Always accurate.
+              Official South African Golf Association handicap calculations based on your best performances.
             </p>
           </div>
 
-          <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-8 hover:shadow-lg transition">
-            <div className="text-3xl mb-4">👥</div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-              Leaderboard
+          <div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+              Course Database
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              See how you stack up against other players.
+              Access South African courses with official ratings and slope ratings for accurate scoring.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+              Offline Support
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              Install as an app on your phone. Works offline, syncs when connected.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Footer CTA */}
+      {/* CTA */}
       {!payload && (
         <div className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
           <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-              Ready to track your game?
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              Get Started
             </h2>
             <p className="text-slate-600 dark:text-slate-400 mb-8">
-              Sign up now and start building your handicap record.
+              Sign in to start tracking your handicap.
             </p>
             <Link
               href="/auth/login"
-              className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-semibold transition"
+              className="inline-block bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-3 rounded font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition"
             >
               Sign In
             </Link>
