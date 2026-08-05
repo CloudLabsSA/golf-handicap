@@ -91,6 +91,12 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-4">
             <Link
+              href="/course-handicap"
+              className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium transition"
+            >
+              Calculate Handicap
+            </Link>
+            <Link
               href="/rounds/new"
               className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2 rounded font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition"
             >
