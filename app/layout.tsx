@@ -3,13 +3,13 @@ import './globals.css';
 import { PWARegister } from './pwa-register';
 
 export const metadata: Metadata = {
-  title: 'Golf Handicap Tracker',
-  description: 'Track golf scores and calculate handicaps using SAGA rules',
+  title: 'Bandicap',
+  description: 'Golf handicap tracking and scoring',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Golf Handicap',
+    title: 'Bandicap',
   },
   formatDetection: {
     telephone: false,

@@ -4,11 +4,17 @@
   "description": "Golf handicap tracking and scoring",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#1f2937",
   "theme_color": "#1f2937",
   "orientation": "portrait-primary",
   "scope": "/",
   "categories": ["sports"],
-  "screenshots": [],
-  "icons": []
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
 }

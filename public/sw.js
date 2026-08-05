@@ -1,10 +1,8 @@
-const CACHE_NAME = 'golf-handicap-v1';
+const CACHE_NAME = 'bandicap-v1';
 const urlsToCache = [
   '/',
   '/dashboard',
   '/rounds/new',
-  '/players',
-  '/offline',
 ];
 
 self.addEventListener('install', (event) => {
