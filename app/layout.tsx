@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { PWARegister } from './pwa-register';
 
 export const metadata: Metadata = {
   title: 'Golf Handicap Tracker',
@@ -28,6 +29,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50">
+        <PWARegister />
         {children}
       </body>
     </html>
