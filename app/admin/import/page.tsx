@@ -9,11 +9,22 @@ interface ImportResponse {
   errors?: string[];
 }
 
+interface DedupeResponse {
+  success: boolean;
+  originalCount: number;
+  finalCount: number;
+  duplicatesCleaned: number;
+  namesNormalized: number;
+  log: string[];
+}
+
 export default function ImportPage() {
   const [jsonInput, setJsonInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ImportResponse | null>(null);
   const [error, setError] = useState('');
+  const [dedupeResult, setDedupeResult] = useState<DedupeResponse | null>(null);
+  const [deduping, setDeduping] = useState(false);
 
   async function handleImport() {
     setLoading(true);
@@ -43,6 +54,29 @@ export default function ImportPage() {
     }
   }
 
+  async function handleDedupe() {
+    setDeduping(true);
+    setError('');
+    setDedupeResult(null);
+
+    try {
+      const response = await fetch('/api/admin/dedupe', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Dedupe failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setDedupeResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Dedupe failed');
+    } finally {
+      setDeduping(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
@@ -57,7 +91,7 @@ export default function ImportPage() {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-3 gap-6">
           {/* Input Section */}
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
@@ -150,6 +184,86 @@ export default function ImportPage() {
                 <p className="text-slate-500 dark:text-slate-400 text-center">
                   Results will appear here after import
                 </p>
+              </div>
+            )}
+          </div>
+
+          {/* Dedupe Section */}
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+              Cleanup
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              Remove duplicate courses and normalize names to title case
+            </p>
+            <button
+              onClick={handleDedupe}
+              disabled={deduping}
+              className="w-full bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white font-semibold py-2 rounded-lg transition"
+            >
+              {deduping ? 'Deduping...' : 'Run Dedupe & Normalize'}
+            </button>
+
+            {dedupeResult && (
+              <div className="mt-4 space-y-3">
+                <div className="p-3 bg-slate-50 dark:bg-slate-700 rounded">
+                  <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                    <div>
+                      <p className="text-slate-600 dark:text-slate-400">Original</p>
+                      <p className="font-bold text-slate-900 dark:text-white">
+                        {dedupeResult.originalCount}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600 dark:text-slate-400">Final</p>
+                      <p className="font-bold text-slate-900 dark:text-white">
+                        {dedupeResult.finalCount}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600 dark:text-slate-400">Merged</p>
+                      <p className="font-bold text-slate-900 dark:text-white">
+                        {dedupeResult.duplicatesCleaned}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600 dark:text-slate-400">Normalized</p>
+                      <p className="font-bold text-slate-900 dark:text-white">
+                        {dedupeResult.namesNormalized}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-sm">
+                    {dedupeResult.success ? (
+                      <p className="text-green-700 dark:text-green-400 font-semibold">
+                        ✓ Dedupe successful
+                      </p>
+                    ) : (
+                      <p className="text-yellow-700 dark:text-yellow-400 font-semibold">
+                        ⚠ Dedupe completed
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {dedupeResult.log && dedupeResult.log.length > 0 && (
+                  <div className="max-h-40 overflow-y-auto">
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                      Log:
+                    </p>
+                    <ul className="space-y-1">
+                      {dedupeResult.log.map((line, i) => (
+                        <li
+                          key={i}
+                          className="text-xs text-slate-600 dark:text-slate-400 p-1"
+                        >
+                          {line}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
