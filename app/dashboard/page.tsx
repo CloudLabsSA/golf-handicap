@@ -234,10 +234,12 @@ export default function DashboardPage() {
                         </div>
                         <button
                           onClick={handleDelete}
-                          className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition opacity-0 group-hover:opacity-100"
+                          className="inline-flex items-center justify-center w-8 h-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition opacity-0 group-hover:opacity-100"
                           title="Delete round"
                         >
-                          ✕
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7l1.41-1.41L12 10.17l2.12-2.12 1.41 1.41L13.41 11l2.12 2.12-1.41 1.41L12 12.83l-2.12 2.12-1.41-1.41L10.59 11 8.46 8.88zM15.5 4l-1-1h-5l-1 1H5v2h14V4z" />
+                          </svg>
                         </button>
                       </div>
                     </div>
