@@ -372,7 +372,7 @@ export default function ImportPage() {
                   </label>
                   <input
                     type="number"
-                    step="0.1"
+                    step="any"
                     value={courseRating}
                     onChange={(e) => setCourseRating(e.target.value)}
                     placeholder="e.g., 73.5"
@@ -385,6 +385,7 @@ export default function ImportPage() {
                   </label>
                   <input
                     type="number"
+                    step="any"
                     value={courseSlope}
                     onChange={(e) => setCourseSlope(e.target.value)}
                     placeholder="e.g., 142"
@@ -464,7 +465,7 @@ export default function ImportPage() {
                     </label>
                     <input
                       type="number"
-                      step="0.1"
+                      step="any"
                       value={newTee.rating}
                       onChange={(e) =>
                         setNewTee({
