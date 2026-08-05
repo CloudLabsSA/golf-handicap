@@ -483,11 +483,12 @@ export default function ImportPage() {
                     </label>
                     <input
                       type="number"
+                      step="any"
                       value={newTee.slope}
                       onChange={(e) =>
                         setNewTee({
                           ...newTee,
-                          slope: parseInt(e.target.value) || 113,
+                          slope: parseFloat(e.target.value) || 113,
                         })
                       }
                       placeholder="e.g., 142"
