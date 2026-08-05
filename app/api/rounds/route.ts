@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { courseName, coursePar, score, date, holes = 18, scorecard } = await request.json();
+    const { courseName, coursePar, score, date, holes = 18, scorecard, courseRating, slopeRating } = await request.json();
 
     if (!courseName || !coursePar || !score) {
       return NextResponse.json(
@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
       score,
       date: new Date(date),
       scorecard: scorecard ? JSON.stringify(scorecard) : null,
+      courseRating: courseRating || course[0].courseRating || undefined,
+      slopeRating: slopeRating || course[0].slopeRating || undefined,
     });
 
     const newRound = await db

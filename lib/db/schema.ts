@@ -64,6 +64,8 @@ export const rounds = pgTable(
     slopeRating: real('slope_rating'), // Captured at time of round
     date: timestamp('date').notNull(),
     scorecard: text('scorecard'), // JSON array of hole scores
+    courseRating: real('course_rating'),
+    slopeRating: real('slope_rating'),
     createdAt: timestamp('created_at').defaultNow(),
   }
 );

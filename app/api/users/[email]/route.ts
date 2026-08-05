@@ -31,8 +31,8 @@ export async function GET(
         courseId: rounds.courseId,
         courseName: courses.name,
         coursePar: courses.par,
-        courseRating: courses.courseRating,
-        slopeRating: courses.slopeRating,
+        courseRating: rounds.courseRating,
+        slopeRating: rounds.slopeRating,
       })
       .from(rounds)
       .innerJoin(courses, eq(rounds.courseId, courses.id))

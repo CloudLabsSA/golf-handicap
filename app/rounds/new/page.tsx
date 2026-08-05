@@ -1,21 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+interface Course {
+  id: string;
+  name: string;
+  location: string;
+  par: number;
+  courseRating: number | null;
+  slopeRating: number | null;
+}
 
 export default function NewRoundPage() {
   const router = useRouter();
-  const [courseName, setCourseName] = useState('');
-  const [coursePar, setCoursePar] = useState('72');
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState('');
   const [holes, setHoles] = useState<9 | 18>(18);
   const [score, setScore] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [coursesLoading, setCoursesLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadCourses() {
+      try {
+        const response = await fetch('/api/courses/list');
+        if (!response.ok) throw new Error('Failed to load courses');
+        const data = await response.json();
+        setCourses(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load courses');
+      } finally {
+        setCoursesLoading(false);
+      }
+    }
+    loadCourses();
+  }, []);
+
+  const selectedCourse = courses.find((c) => c.id === selectedCourseId);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!courseName || !coursePar || !score) return;
+    if (!selectedCourseId || !score) return;
 
     setLoading(true);
     setError('');
@@ -25,11 +53,13 @@ export default function NewRoundPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          courseName,
-          coursePar: parseInt(coursePar),
+          courseName: selectedCourse!.name,
+          coursePar: selectedCourse!.par,
           holes,
           score: parseInt(score),
           date,
+          courseRating: selectedCourse!.courseRating,
+          slopeRating: selectedCourse!.slopeRating,
         }),
       });
 
@@ -63,35 +93,49 @@ export default function NewRoundPage() {
             </div>
           )}
 
-          {/* Course Name */}
+          {/* Course Selection */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Course Name
+              Course
             </label>
-            <input
-              type="text"
-              value={courseName}
-              onChange={(e) => setCourseName(e.target.value)}
-              placeholder="e.g., Wentworth Club, Royal Johannesburg"
-              required
-              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+            {coursesLoading ? (
+              <div className="text-slate-500">Loading courses...</div>
+            ) : (
+              <select
+                value={selectedCourseId}
+                onChange={(e) => setSelectedCourseId(e.target.value)}
+                required
+                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Select a course...</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.name} ({course.location}) - Par {course.par}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
-          {/* Course Par */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Course Par
-            </label>
-            <input
-              type="number"
-              value={coursePar}
-              onChange={(e) => setCoursePar(e.target.value)}
-              placeholder="72"
-              required
-              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
+          {/* Course Rating & Slope Info */}
+          {selectedCourse && (
+            <div className="bg-slate-100 dark:bg-slate-700 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400 mb-1">Course Rating</p>
+                  <p className="font-semibold text-slate-900 dark:text-white">
+                    {selectedCourse.courseRating?.toFixed(1) || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400 mb-1">Slope Rating</p>
+                  <p className="font-semibold text-slate-900 dark:text-white">
+                    {selectedCourse.slopeRating?.toFixed(0) || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Holes Selection */}
           <div>
@@ -157,7 +201,7 @@ export default function NewRoundPage() {
           <div className="flex gap-4">
             <button
               type="submit"
-              disabled={loading || !courseName || !score}
+              disabled={loading || !selectedCourseId || !score}
               className="flex-1 bg-green-700 hover:bg-green-800 disabled:opacity-50 text-white font-semibold py-2 rounded-lg transition"
             >
               {loading ? 'Saving...' : 'Save Round'}
