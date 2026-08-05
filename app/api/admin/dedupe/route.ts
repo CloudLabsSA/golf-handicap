@@ -1,177 +1,108 @@
 import { NextResponse } from 'next/server';
 import { db, courses, tees, rounds } from '@/lib/db';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 function toTitleCase(str: string): string {
   return str
     .toLowerCase()
     .split(' ')
     .map((word) => {
-      // Handle hyphenated words
       const parts = word.split('-');
       return parts
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('-');
     })
     .join(' ')
-    // Handle special cases
     .replace(/\bGc\b/gi, 'GC')
     .replace(/\bLc\b/gi, 'LC');
 }
 
-function getBaseTeeeName(teeName: string): string {
-  // Remove gender suffixes: (w), (W), (Women), (women), - Ladies, etc
-  return teeName
-    .replace(/\s*\(w\)\s*/gi, '')
-    .replace(/\s*\(women\)\s*/gi, '')
-    .replace(/\s*-\s*ladies\s*/gi, '')
-    .trim();
-}
-
 export async function POST() {
   try {
-    // Get all courses
-    const allCourses = await db.select().from(courses);
-
-    // Group by normalized name to find duplicates
-    const courseMap = new Map<string, typeof allCourses>();
-    for (const course of allCourses) {
-      const normalized = toTitleCase(course.name);
-      if (!courseMap.has(normalized)) {
-        courseMap.set(normalized, []);
-      }
-      courseMap.get(normalized)!.push(course);
-    }
-
-    // Find duplicates and merge
     const dedupeLog: string[] = [];
     let merged = 0;
     let normalized = 0;
+    let teesNormalized = 0;
 
-    for (const [normalizedName, courseGroup] of courseMap.entries()) {
-      if (courseGroup.length > 1) {
-        // Keep the first course, merge others into it
-        const keepCourse = courseGroup[0];
-        dedupeLog.push(`Merging ${courseGroup.length} courses into: ${normalizedName}`);
-
-        for (let i = 1; i < courseGroup.length; i++) {
-          const deleteCourse = courseGroup[i];
-
-          // Move tees from duplicate course to main course
-          await db
-            .update(tees)
-            .set({ courseId: keepCourse.id })
-            .where(eq(tees.courseId, deleteCourse.id));
-
-          // Move rounds from duplicate course to main course
-          await db
-            .update(rounds)
-            .set({ courseId: keepCourse.id })
-            .where(eq(rounds.courseId, deleteCourse.id));
-
-          // Delete the duplicate course
-          await db.delete(courses).where(eq(courses.id, deleteCourse.id));
-          merged++;
-        }
-
-        // Update the kept course name to title case
-        if (keepCourse.name !== normalizedName) {
-          await db
-            .update(courses)
-            .set({ name: normalizedName })
-            .where(eq(courses.id, keepCourse.id));
-          normalized++;
-        }
-      } else if (courseGroup[0].name !== normalizedName) {
-        // Normalize course name even if not a duplicate
+    // Step 1: Normalize all course names to title case
+    const allCourses = await db.select().from(courses);
+    for (const course of allCourses) {
+      const normalizedName = toTitleCase(course.name);
+      if (course.name !== normalizedName) {
         await db
           .update(courses)
           .set({ name: normalizedName })
-          .where(eq(courses.id, courseGroup[0].id));
+          .where(eq(courses.id, course.id));
         normalized++;
       }
     }
 
-    // Now handle tee deduplication within courses
-    let teesMerged = 0;
-    let teesNormalized = 0;
-
-    const allCourses2 = await db.select().from(courses);
+    // Step 2: Normalize all tee names to title case
     const allTees = await db.select().from(tees);
+    for (const tee of allTees) {
+      // Clean the tee name: remove gender suffixes and title case
+      const cleanName = tee.teeName
+        .replace(/\s*\(w\)\s*/gi, '')
+        .replace(/\s*\(women\)\s*/gi, '')
+        .replace(/\s*-\s*ladies\s*/gi, '')
+        .trim();
 
-    for (const course of allCourses2) {
-      const courseTees = allTees.filter((t) => t.courseId === course.id);
-
-      // Group tees by base name and gender to find duplicates
-      const teeMap = new Map<
-        string,
-        typeof courseTees
-      >();
-
-      for (const tee of courseTees) {
-        const baseName = getBaseTeeeName(tee.teeName);
-        const key = `${baseName}|${tee.gender || 'M'}`;
-
-        if (!teeMap.has(key)) {
-          teeMap.set(key, []);
-        }
-        teeMap.get(key)!.push(tee);
+      const normalizedName = toTitleCase(cleanName);
+      if (tee.teeName !== normalizedName) {
+        await db
+          .update(tees)
+          .set({ teeName: normalizedName })
+          .where(eq(tees.id, tee.id));
+        teesNormalized++;
       }
+    }
 
-      // Merge duplicate tees within this course
-      for (const [key, teeGroup] of teeMap.entries()) {
-        if (teeGroup.length > 1) {
-          const keepTee = teeGroup[0];
-          const baseName = getBaseTeeeName(keepTee.teeName);
-          const cleanTeeName = toTitleCase(baseName);
+    // Step 3: Find and merge duplicate courses (by normalized name)
+    const updatedCourses = await db.select().from(courses);
+    const courseMap = new Map<string, string[]>();
 
-          dedupeLog.push(
-            `Merging ${teeGroup.length} tees in ${course.name}: ${cleanTeeName}`
-          );
+    for (const course of updatedCourses) {
+      if (!courseMap.has(course.name)) {
+        courseMap.set(course.name, []);
+      }
+      courseMap.get(course.name)!.push(course.id);
+    }
 
-          for (let i = 1; i < teeGroup.length; i++) {
-            const deleteTee = teeGroup[i];
+    for (const [courseName, courseIds] of courseMap.entries()) {
+      if (courseIds.length > 1) {
+        const keepId = courseIds[0];
+        dedupeLog.push(`Merging ${courseIds.length} duplicate courses: ${courseName}`);
 
-            // Update rounds that reference this tee
-            await db
-              .update(rounds)
-              .set({ teeTeeId: keepTee.id })
-              .where(eq(rounds.teeTeeId, deleteTee.id));
+        for (let i = 1; i < courseIds.length; i++) {
+          const deleteId = courseIds[i];
 
-            // Delete the duplicate tee
-            await db.delete(tees).where(eq(tees.id, deleteTee.id));
-            teesMerged++;
-          }
-
-          // Update the kept tee name to clean version
-          if (keepTee.teeName !== cleanTeeName) {
-            await db
-              .update(tees)
-              .set({ teeName: cleanTeeName })
-              .where(eq(tees.id, keepTee.id));
-            teesNormalized++;
-          }
-        } else if (teeGroup[0].teeName !== toTitleCase(getBaseTeeeName(teeGroup[0].teeName))) {
-          // Normalize tee name even if not a duplicate
-          const cleanName = toTitleCase(getBaseTeeeName(teeGroup[0].teeName));
+          // Move tees
           await db
             .update(tees)
-            .set({ teeName: cleanName })
-            .where(eq(tees.id, teeGroup[0].id));
-          teesNormalized++;
+            .set({ courseId: keepId })
+            .where(eq(tees.courseId, deleteId));
+
+          // Move rounds
+          await db
+            .update(rounds)
+            .set({ courseId: keepId })
+            .where(eq(rounds.courseId, deleteId));
+
+          // Delete course
+          await db.delete(courses).where(eq(courses.id, deleteId));
+          merged++;
         }
       }
     }
 
-    const finalCount = await db.select().from(courses);
+    const finalCourses = await db.select().from(courses);
 
     return NextResponse.json({
       success: true,
       originalCount: allCourses.length,
-      finalCount: finalCount.length,
+      finalCount: finalCourses.length,
       duplicatesCleaned: merged,
       namesNormalized: normalized,
-      teesMerged,
       teesNormalized,
       log: dedupeLog,
     });
