@@ -157,7 +157,10 @@ export default function NewRoundPage() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to save round');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save round');
+      }
 
       router.push('/dashboard');
     } catch (err) {
