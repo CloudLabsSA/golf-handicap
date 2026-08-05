@@ -27,6 +27,10 @@ interface Tee {
   par: number | null;
 }
 
+interface UserData {
+  handicapIndex: number;
+}
+
 export default function NewRoundPage() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -43,21 +47,34 @@ export default function NewRoundPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [coursesLoading, setCoursesLoading] = useState(true);
+  const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
-    async function loadCourses() {
+    async function loadData() {
       try {
-        const response = await fetch('/api/courses/list');
-        if (!response.ok) throw new Error('Failed to load courses');
-        const data = await response.json();
-        setCourses(data);
+        // Load courses
+        const coursesResponse = await fetch('/api/courses/list');
+        if (!coursesResponse.ok) throw new Error('Failed to load courses');
+        const coursesData = await coursesResponse.json();
+        setCourses(coursesData);
+
+        // Load user data for handicap
+        const userResponse = await fetch('/api/me');
+        if (userResponse.ok) {
+          const { email } = await userResponse.json();
+          const userDataResponse = await fetch(`/api/users/${encodeURIComponent(email)}`);
+          if (userDataResponse.ok) {
+            const userData = await userDataResponse.json();
+            setUser(userData);
+          }
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load courses');
+        setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
         setCoursesLoading(false);
       }
     }
-    loadCourses();
+    loadData();
   }, []);
 
   const selectedCourse = courses.find((c) => c.id === selectedCourseId);
@@ -90,6 +107,19 @@ export default function NewRoundPage() {
       return `${tee.teeName.replace(/\s*\(w\)\s*|\s*\(Women\)\s*/gi, '')} - Ladies`;
     }
     return tee.teeName;
+  };
+
+  const calculateCourseHandicap = (): number | null => {
+    if (!user || !selectedCourse || !selectedTee) return null;
+
+    const rating = getCurrentRating();
+    const slope = getCurrentSlope();
+
+    if (!rating || !slope || !selectedCourse.par) return null;
+
+    // Course Handicap = (Handicap Index × Slope / 113) + (Course Rating - Par)
+    const courseHandicap = (user.handicapIndex * (slope / 113)) + (rating - selectedCourse.par);
+    return Math.round(courseHandicap);
   };
 
   const handleSelectCourse = (course: Course) => {
@@ -327,6 +357,21 @@ export default function NewRoundPage() {
               </div>
             )}
           </div>
+
+          {/* Course Handicap */}
+          {selectedCourse && selectedTee && user && (
+            <div className="bg-slate-50 dark:bg-slate-800 rounded p-4 border border-slate-200 dark:border-slate-700">
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2">
+                Your Course Handicap
+              </p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white">
+                {calculateCourseHandicap() ?? 'N/A'}
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
+                Calculated from your handicap index of {user.handicapIndex.toFixed(1)}
+              </p>
+            </div>
+          )}
 
           {/* Score */}
           <div>
