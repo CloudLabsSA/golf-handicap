@@ -1,8 +1,7 @@
 interface RoundData {
   score: number;
-  coursePar: number;
-  courseRating?: number;
-  slopeRating?: number;
+  courseRating: number;
+  slopeRating: number;
 }
 
 export function calculateHandicapIndex(rounds: RoundData[]): number {
@@ -11,45 +10,31 @@ export function calculateHandicapIndex(rounds: RoundData[]): number {
   // Take last 20 rounds, or all if less than 20
   const recentRounds = rounds.slice(-20);
 
-  // Calculate score differentials (simplified version without slope initially)
+  // Calculate score differentials using SAGA methodology
+  // Differential = (Score - Course Rating) × 113 / Slope Rating
   const differentials = recentRounds.map((round) => {
-    if (round.courseRating) {
-      // Full calculation with course rating
-      // Differential = (Score - Course Rating) * 113 / Slope Rating
-      const slopeRating = round.slopeRating || 113;
-      return ((round.score - round.courseRating) * 113) / slopeRating;
-    } else {
-      // Simple version: just use strokes over par
-      return round.score - round.coursePar;
-    }
+    return ((round.score - round.courseRating) * 113) / round.slopeRating;
   });
 
-  // Sort differentials in ascending order (best scores first)
+  // Sort differentials in ascending order (best/lowest first)
   differentials.sort((a, b) => a - b);
 
-  // Number of scores to use based on total rounds
+  // Determine number of scores to count based on total rounds
+  // SAGA uses: 1 from 5, 2 from 6-7, 3 from 8-10, 4 from 11-13, 5 from 14-15,
+  //           6 from 16-17, 7 from 18-19, 8 from 20
   let scoresToUse = 1;
-  if (recentRounds.length >= 5) scoresToUse = 1;
   if (recentRounds.length >= 6) scoresToUse = 2;
-  if (recentRounds.length >= 7) scoresToUse = 2;
   if (recentRounds.length >= 8) scoresToUse = 3;
-  if (recentRounds.length >= 9) scoresToUse = 3;
-  if (recentRounds.length >= 10) scoresToUse = 3;
   if (recentRounds.length >= 11) scoresToUse = 4;
-  if (recentRounds.length >= 12) scoresToUse = 4;
-  if (recentRounds.length >= 13) scoresToUse = 4;
   if (recentRounds.length >= 14) scoresToUse = 5;
-  if (recentRounds.length >= 15) scoresToUse = 5;
   if (recentRounds.length >= 16) scoresToUse = 6;
-  if (recentRounds.length >= 17) scoresToUse = 6;
   if (recentRounds.length >= 18) scoresToUse = 7;
-  if (recentRounds.length >= 19) scoresToUse = 7;
   if (recentRounds.length >= 20) scoresToUse = 8;
 
-  // Take the best scores
+  // Take the best (lowest) scores
   const bestScores = differentials.slice(0, scoresToUse);
 
-  // Calculate average
+  // Calculate average of best scores
   const average = bestScores.reduce((a, b) => a + b, 0) / scoresToUse;
 
   // Apply 96% factor and round to nearest 0.1

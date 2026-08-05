@@ -20,15 +20,28 @@ export const courses = pgTable(
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     location: text('location'),
-    par: integer('par').notNull(),
-    courseRating: real('course_rating'),
-    slopeRating: real('slope_rating'),
-    holes: integer('holes').default(18),
-    externalId: text('external_id'),
+    createdAt: timestamp('created_at').defaultNow(),
+  }
+);
+
+export const courseTees = pgTable(
+  'course_tees',
+  {
+    id: text('id').primaryKey(),
+    courseId: text('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    teeColor: text('tee_color').notNull(), // Gold, Blue, White, Red, etc
+    front9Rating: real('front9_rating'),
+    front9Slope: real('front9_slope'),
+    back9Rating: real('back9_rating'),
+    back9Slope: real('back9_slope'),
+    full18Rating: real('full18_rating'),
+    full18Slope: real('full18_slope'),
     createdAt: timestamp('created_at').defaultNow(),
   },
   (table) => ({
-    externalIdIdx: uniqueIndex('external_id_idx').on(table.externalId),
+    courseIdTeeIdx: uniqueIndex('course_id_tee_idx').on(table.courseId, table.teeColor),
   })
 );
 
@@ -42,7 +55,13 @@ export const rounds = pgTable(
     courseId: text('course_id')
       .notNull()
       .references(() => courses.id),
+    teeTeeId: text('tee_id')
+      .references(() => courseTees.id),
+    teeColor: text('tee_color'), // Stored for reference
+    holes: integer('holes').default(18), // 9 or 18
     score: integer('score').notNull(),
+    courseRating: real('course_rating'), // Captured at time of round
+    slopeRating: real('slope_rating'), // Captured at time of round
     date: timestamp('date').notNull(),
     scorecard: text('scorecard'), // JSON array of hole scores
     createdAt: timestamp('created_at').defaultNow(),
