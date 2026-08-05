@@ -65,7 +65,7 @@ export async function POST() {
 
     for (const course of freshCourses) {
       const courseTees = freshTees.filter((t) => t.courseId === course.id);
-      const teeMap = new Map<string, typeof courseTees>();
+      const teeMap = new Map<string, any[]>();
 
       for (const tee of courseTees) {
         if (!teeMap.has(tee.teeName)) {
@@ -83,13 +83,17 @@ export async function POST() {
 
           for (let i = 1; i < teeGroup.length; i++) {
             const deleteTee = teeGroup[i];
-            await db
-              .update(rounds)
-              .set({ teeTeeId: keepTee.id })
-              .where(eq(rounds.teeTeeId, deleteTee.id));
+            try {
+              await db
+                .update(rounds)
+                .set({ teeTeeId: keepTee.id })
+                .where(eq(rounds.teeTeeId, deleteTee.id));
 
-            await db.delete(tees).where(eq(tees.id, deleteTee.id));
-            teesMerged++;
+              await db.delete(tees).where(eq(tees.id, deleteTee.id));
+              teesMerged++;
+            } catch (e) {
+              console.error(`Failed to merge tee ${deleteTee.id}:`, e);
+            }
           }
         }
       }
@@ -97,7 +101,7 @@ export async function POST() {
 
     // Step 4: Merge duplicate courses
     const finalCourses = await db.select().from(courses);
-    const courseMap = new Map<string, typeof finalCourses>();
+    const courseMap = new Map<string, any[]>();
 
     for (const course of finalCourses) {
       if (!courseMap.has(course.name)) {
@@ -113,18 +117,22 @@ export async function POST() {
 
         for (let i = 1; i < courseGroup.length; i++) {
           const deleteCourse = courseGroup[i];
-          await db
-            .update(tees)
-            .set({ courseId: keepCourse.id })
-            .where(eq(tees.courseId, deleteCourse.id));
+          try {
+            await db
+              .update(tees)
+              .set({ courseId: keepCourse.id })
+              .where(eq(tees.courseId, deleteCourse.id));
 
-          await db
-            .update(rounds)
-            .set({ courseId: keepCourse.id })
-            .where(eq(rounds.courseId, deleteCourse.id));
+            await db
+              .update(rounds)
+              .set({ courseId: keepCourse.id })
+              .where(eq(rounds.courseId, deleteCourse.id));
 
-          await db.delete(courses).where(eq(courses.id, deleteCourse.id));
-          coursesMerged++;
+            await db.delete(courses).where(eq(courses.id, deleteCourse.id));
+            coursesMerged++;
+          } catch (e) {
+            console.error(`Failed to merge course ${deleteCourse.id}:`, e);
+          }
         }
       }
     }
