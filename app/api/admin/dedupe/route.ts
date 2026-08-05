@@ -20,11 +20,14 @@ function toTitleCase(str: string): string {
 export async function POST() {
   try {
     const dedupeLog: string[] = [];
-    let merged = 0;
-    let normalized = 0;
+    let coursesMerged = 0;
+    let coursesNormalized = 0;
     let teesNormalized = 0;
+    let teesMerged = 0;
 
-    // Step 1: Normalize all course names to title case
+    const originalCourseCount = (await db.select().from(courses)).length;
+
+    // Step 1: Normalize all course names
     const allCourses = await db.select().from(courses);
     for (const course of allCourses) {
       const normalizedName = toTitleCase(course.name);
@@ -33,14 +36,13 @@ export async function POST() {
           .update(courses)
           .set({ name: normalizedName })
           .where(eq(courses.id, course.id));
-        normalized++;
+        coursesNormalized++;
       }
     }
 
-    // Step 2: Normalize all tee names to title case
+    // Step 2: Normalize all tee names
     const allTees = await db.select().from(tees);
     for (const tee of allTees) {
-      // Clean the tee name: remove gender suffixes and title case
       const cleanName = tee.teeName
         .replace(/\s*\(w\)\s*/gi, '')
         .replace(/\s*\(women\)\s*/gi, '')
@@ -57,94 +59,84 @@ export async function POST() {
       }
     }
 
-    // Step 3: Find and merge duplicate tees within each course
-    let teesMerged = 0;
-    const updatedTees = await db.select().from(tees);
-    const updatedCourses = await db.select().from(courses);
+    // Step 3: Merge duplicate tees within each course
+    const freshTees = await db.select().from(tees);
+    const freshCourses = await db.select().from(courses);
 
-    for (const course of updatedCourses) {
-      const courseTees = updatedTees.filter((t) => t.courseId === course.id);
-      const teeNameMap = new Map<string, string[]>();
+    for (const course of freshCourses) {
+      const courseTees = freshTees.filter((t) => t.courseId === course.id);
+      const teeMap = new Map<string, typeof courseTees>();
 
-      // Group by tee name
       for (const tee of courseTees) {
-        if (!teeNameMap.has(tee.teeName)) {
-          teeNameMap.set(tee.teeName, []);
+        if (!teeMap.has(tee.teeName)) {
+          teeMap.set(tee.teeName, []);
         }
-        teeNameMap.get(tee.teeName)!.push(tee.id);
+        teeMap.get(tee.teeName)!.push(tee);
       }
 
-      // Merge duplicate tees
-      for (const [teeName, teeIds] of teeNameMap.entries()) {
-        if (teeIds.length > 1) {
-          const keepId = teeIds[0];
+      for (const [teeName, teeGroup] of teeMap.entries()) {
+        if (teeGroup.length > 1) {
+          const keepTee = teeGroup[0];
           dedupeLog.push(
-            `Merging ${teeIds.length} "${teeName}" tees in ${course.name}`
+            `Merged ${teeGroup.length} ${teeName} tees in ${course.name}`
           );
 
-          for (let i = 1; i < teeIds.length; i++) {
-            const deleteId = teeIds[i];
-
-            // Update rounds pointing to this tee
+          for (let i = 1; i < teeGroup.length; i++) {
+            const deleteTee = teeGroup[i];
             await db
               .update(rounds)
-              .set({ teeTeeId: keepId })
-              .where(eq(rounds.teeTeeId, deleteId));
+              .set({ teeTeeId: keepTee.id })
+              .where(eq(rounds.teeTeeId, deleteTee.id));
 
-            // Delete the duplicate tee
-            await db.delete(tees).where(eq(tees.id, deleteId));
+            await db.delete(tees).where(eq(tees.id, deleteTee.id));
             teesMerged++;
           }
         }
       }
     }
 
-    // Step 4: Find and merge duplicate courses (by normalized name)
+    // Step 4: Merge duplicate courses
     const finalCourses = await db.select().from(courses);
-    const courseMap = new Map<string, string[]>();
+    const courseMap = new Map<string, typeof finalCourses>();
 
     for (const course of finalCourses) {
       if (!courseMap.has(course.name)) {
         courseMap.set(course.name, []);
       }
-      courseMap.get(course.name)!.push(course.id);
+      courseMap.get(course.name)!.push(course);
     }
 
-    for (const [courseName, courseIds] of courseMap.entries()) {
-      if (courseIds.length > 1) {
-        const keepId = courseIds[0];
-        dedupeLog.push(`Merging ${courseIds.length} duplicate courses: ${courseName}`);
+    for (const [courseName, courseGroup] of courseMap.entries()) {
+      if (courseGroup.length > 1) {
+        const keepCourse = courseGroup[0];
+        dedupeLog.push(`Merged ${courseGroup.length} courses: ${courseName}`);
 
-        for (let i = 1; i < courseIds.length; i++) {
-          const deleteId = courseIds[i];
-
-          // Move tees
+        for (let i = 1; i < courseGroup.length; i++) {
+          const deleteCourse = courseGroup[i];
           await db
             .update(tees)
-            .set({ courseId: keepId })
-            .where(eq(tees.courseId, deleteId));
+            .set({ courseId: keepCourse.id })
+            .where(eq(tees.courseId, deleteCourse.id));
 
-          // Move rounds
           await db
             .update(rounds)
-            .set({ courseId: keepId })
-            .where(eq(rounds.courseId, deleteId));
+            .set({ courseId: keepCourse.id })
+            .where(eq(rounds.courseId, deleteCourse.id));
 
-          // Delete course
-          await db.delete(courses).where(eq(courses.id, deleteId));
-          merged++;
+          await db.delete(courses).where(eq(courses.id, deleteCourse.id));
+          coursesMerged++;
         }
       }
     }
 
-    const finalCoursesList = await db.select().from(courses);
+    const finalCount = (await db.select().from(courses)).length;
 
     return NextResponse.json({
       success: true,
-      originalCount: allCourses.length,
-      finalCount: finalCoursesList.length,
-      duplicatesCleaned: merged,
-      namesNormalized: normalized,
+      originalCount: originalCourseCount,
+      finalCount,
+      duplicatesCleaned: coursesMerged,
+      namesNormalized: coursesNormalized,
       teesMerged,
       teesNormalized,
       log: dedupeLog,
