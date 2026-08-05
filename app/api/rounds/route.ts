@@ -57,8 +57,6 @@ export async function POST(request: NextRequest) {
       id: roundId,
       userId: user[0].id,
       courseId: course[0].id,
-      teeTeeId: null,
-      teeColor: null,
       holes,
       score,
       date: new Date(date),

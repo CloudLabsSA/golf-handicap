@@ -82,15 +82,12 @@ export const rounds = pgTable(
     courseId: text('course_id')
       .notNull()
       .references(() => courses.id),
-    teeTeeId: text('tee_id')
-      .references(() => courseTees.id),
-    teeColor: text('tee_color'), // Stored for reference
-    holes: integer('holes').default(18), // 9 or 18
+    holes: integer('holes').default(18),
     score: integer('score').notNull(),
-    courseRating: real('course_rating'), // Captured at time of round
-    slopeRating: real('slope_rating'), // Captured at time of round
+    courseRating: real('course_rating'),
+    slopeRating: real('slope_rating'),
     date: timestamp('date').notNull(),
-    scorecard: text('scorecard'), // JSON array of hole scores
+    scorecard: text('scorecard'),
     createdAt: timestamp('created_at').defaultNow(),
   }
 );
