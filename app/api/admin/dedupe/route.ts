@@ -57,11 +57,53 @@ export async function POST() {
       }
     }
 
-    // Step 3: Find and merge duplicate courses (by normalized name)
+    // Step 3: Find and merge duplicate tees within each course
+    let teesMerged = 0;
+    const updatedTees = await db.select().from(tees);
     const updatedCourses = await db.select().from(courses);
-    const courseMap = new Map<string, string[]>();
 
     for (const course of updatedCourses) {
+      const courseTees = updatedTees.filter((t) => t.courseId === course.id);
+      const teeNameMap = new Map<string, string[]>();
+
+      // Group by tee name
+      for (const tee of courseTees) {
+        if (!teeNameMap.has(tee.teeName)) {
+          teeNameMap.set(tee.teeName, []);
+        }
+        teeNameMap.get(tee.teeName)!.push(tee.id);
+      }
+
+      // Merge duplicate tees
+      for (const [teeName, teeIds] of teeNameMap.entries()) {
+        if (teeIds.length > 1) {
+          const keepId = teeIds[0];
+          dedupeLog.push(
+            `Merging ${teeIds.length} "${teeName}" tees in ${course.name}`
+          );
+
+          for (let i = 1; i < teeIds.length; i++) {
+            const deleteId = teeIds[i];
+
+            // Update rounds pointing to this tee
+            await db
+              .update(rounds)
+              .set({ teeTeeId: keepId })
+              .where(eq(rounds.teeTeeId, deleteId));
+
+            // Delete the duplicate tee
+            await db.delete(tees).where(eq(tees.id, deleteId));
+            teesMerged++;
+          }
+        }
+      }
+    }
+
+    // Step 4: Find and merge duplicate courses (by normalized name)
+    const finalCourses = await db.select().from(courses);
+    const courseMap = new Map<string, string[]>();
+
+    for (const course of finalCourses) {
       if (!courseMap.has(course.name)) {
         courseMap.set(course.name, []);
       }
@@ -95,14 +137,15 @@ export async function POST() {
       }
     }
 
-    const finalCourses = await db.select().from(courses);
+    const finalCoursesList = await db.select().from(courses);
 
     return NextResponse.json({
       success: true,
       originalCount: allCourses.length,
-      finalCount: finalCourses.length,
+      finalCount: finalCoursesList.length,
       duplicatesCleaned: merged,
       namesNormalized: normalized,
+      teesMerged,
       teesNormalized,
       log: dedupeLog,
     });
