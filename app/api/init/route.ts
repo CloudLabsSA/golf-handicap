@@ -47,8 +47,18 @@ export async function GET(request: NextRequest) {
         "score" integer NOT NULL,
         "date" timestamp NOT NULL,
         "scorecard" text,
+        "course_rating" real,
+        "slope_rating" real,
         "created_at" timestamp DEFAULT now()
       );
+    `;
+
+    // Add new columns if they don't exist
+    await sql`
+      ALTER TABLE "rounds" ADD COLUMN IF NOT EXISTS "course_rating" real;
+    `;
+    await sql`
+      ALTER TABLE "rounds" ADD COLUMN IF NOT EXISTS "slope_rating" real;
     `;
 
     return NextResponse.json({ success: true, message: 'Tables initialized' });
