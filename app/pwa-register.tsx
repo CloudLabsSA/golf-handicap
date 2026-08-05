@@ -14,10 +14,11 @@ export function PWARegister() {
         .then((registration) => {
           console.log('Service Worker registered');
 
-          // Check for updates periodically
+          // Check for updates immediately and periodically
+          registration.update();
           setInterval(() => {
             registration.update();
-          }, 60000); // Check every minute
+          }, 10000); // Check every 10 seconds
 
           // Listen for updates
           registration.addEventListener('updatefound', () => {
