@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db, courses, tees, rounds } from '@/lib/db';
-import { eq } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import { sql } from 'drizzle-orm';
 
 function toTitleCase(str: string): string {
   return str
@@ -20,133 +20,75 @@ function toTitleCase(str: string): string {
 export async function POST() {
   try {
     const dedupeLog: string[] = [];
-    let coursesMerged = 0;
-    let coursesNormalized = 0;
-    let teesNormalized = 0;
-    let teesMerged = 0;
 
-    const originalCourseCount = (await db.select().from(courses)).length;
+    // Get original counts
+    const originalCourseCount = (
+      await db.execute(sql`SELECT COUNT(*) as count FROM courses`)
+    ).rows[0].count;
 
-    // Step 1: Normalize all course names
-    const allCourses = await db.select().from(courses);
-    for (const course of allCourses) {
-      const normalizedName = toTitleCase(course.name);
-      if (course.name !== normalizedName) {
-        await db
-          .update(courses)
-          .set({ name: normalizedName })
-          .where(eq(courses.id, course.id));
-        coursesNormalized++;
-      }
-    }
+    // Step 1: Normalize course names
+    const courseUpdates = await db.execute(sql`
+      UPDATE courses
+      SET name = INITCAP(LOWER(name))
+      WHERE name IS NOT NULL
+    `);
+    dedupeLog.push(`Normalized ${courseUpdates.rowCount} course names`);
 
-    // Step 2: Normalize all tee names
-    const allTees = await db.select().from(tees);
-    for (const tee of allTees) {
-      const cleanName = tee.teeName
-        .replace(/\s*\(w\)\s*/gi, '')
-        .replace(/\s*\(women\)\s*/gi, '')
-        .replace(/\s*-\s*ladies\s*/gi, '')
-        .trim();
+    // Step 2: Normalize tee names (clean gender suffixes first, then title case)
+    const teeUpdates = await db.execute(sql`
+      UPDATE tees
+      SET "teeName" = INITCAP(LOWER(
+        REGEXP_REPLACE(
+          REGEXP_REPLACE(
+            REGEXP_REPLACE("teeName", '\(w\)', '', 'gi'),
+            '\(women\)', '', 'gi'
+          ),
+          '- ladies', '', 'gi'
+        )
+      ))
+      WHERE "teeName" IS NOT NULL
+    `);
+    dedupeLog.push(`Normalized ${teeUpdates.rowCount} tee names`);
 
-      const normalizedName = toTitleCase(cleanName);
-      if (tee.teeName !== normalizedName) {
-        await db
-          .update(tees)
-          .set({ teeName: normalizedName })
-          .where(eq(tees.id, tee.id));
-        teesNormalized++;
-      }
-    }
+    // Step 3: Delete duplicate tees (keep first by ID, delete rest with same name in same course)
+    const teeDeleteResult = await db.execute(sql`
+      DELETE FROM tees
+      WHERE id IN (
+        SELECT id FROM (
+          SELECT id,
+            ROW_NUMBER() OVER (PARTITION BY "courseId", "teeName" ORDER BY id) as rn
+          FROM tees
+        ) t
+        WHERE rn > 1
+      )
+    `);
+    dedupeLog.push(`Deleted ${teeDeleteResult.rowCount} duplicate tees`);
 
-    // Step 3: Merge duplicate tees within each course
-    const freshTees = await db.select().from(tees);
-    const freshCourses = await db.select().from(courses);
+    // Step 4: Delete duplicate courses (keep first by ID, delete rest with same name)
+    const courseDeleteResult = await db.execute(sql`
+      DELETE FROM courses
+      WHERE id IN (
+        SELECT id FROM (
+          SELECT id,
+            ROW_NUMBER() OVER (PARTITION BY name ORDER BY id) as rn
+          FROM courses
+        ) c
+        WHERE rn > 1
+      )
+    `);
+    dedupeLog.push(`Deleted ${courseDeleteResult.rowCount} duplicate courses`);
 
-    for (const course of freshCourses) {
-      const courseTees = freshTees.filter((t) => t.courseId === course.id);
-      const teeMap = new Map<string, any[]>();
-
-      for (const tee of courseTees) {
-        if (!teeMap.has(tee.teeName)) {
-          teeMap.set(tee.teeName, []);
-        }
-        teeMap.get(tee.teeName)!.push(tee);
-      }
-
-      for (const [teeName, teeGroup] of teeMap.entries()) {
-        if (teeGroup.length > 1) {
-          const keepTee = teeGroup[0];
-          dedupeLog.push(
-            `Merged ${teeGroup.length} ${teeName} tees in ${course.name}`
-          );
-
-          for (let i = 1; i < teeGroup.length; i++) {
-            const deleteTee = teeGroup[i];
-            try {
-              await db
-                .update(rounds)
-                .set({ teeTeeId: keepTee.id })
-                .where(eq(rounds.teeTeeId, deleteTee.id));
-
-              await db.delete(tees).where(eq(tees.id, deleteTee.id));
-              teesMerged++;
-            } catch (e) {
-              console.error(`Failed to merge tee ${deleteTee.id}:`, e);
-            }
-          }
-        }
-      }
-    }
-
-    // Step 4: Merge duplicate courses
-    const finalCourses = await db.select().from(courses);
-    const courseMap = new Map<string, any[]>();
-
-    for (const course of finalCourses) {
-      if (!courseMap.has(course.name)) {
-        courseMap.set(course.name, []);
-      }
-      courseMap.get(course.name)!.push(course);
-    }
-
-    for (const [courseName, courseGroup] of courseMap.entries()) {
-      if (courseGroup.length > 1) {
-        const keepCourse = courseGroup[0];
-        dedupeLog.push(`Merged ${courseGroup.length} courses: ${courseName}`);
-
-        for (let i = 1; i < courseGroup.length; i++) {
-          const deleteCourse = courseGroup[i];
-          try {
-            await db
-              .update(tees)
-              .set({ courseId: keepCourse.id })
-              .where(eq(tees.courseId, deleteCourse.id));
-
-            await db
-              .update(rounds)
-              .set({ courseId: keepCourse.id })
-              .where(eq(rounds.courseId, deleteCourse.id));
-
-            await db.delete(courses).where(eq(courses.id, deleteCourse.id));
-            coursesMerged++;
-          } catch (e) {
-            console.error(`Failed to merge course ${deleteCourse.id}:`, e);
-          }
-        }
-      }
-    }
-
-    const finalCount = (await db.select().from(courses)).length;
+    // Get final counts
+    const finalCourseCount = (
+      await db.execute(sql`SELECT COUNT(*) as count FROM courses`)
+    ).rows[0].count;
 
     return NextResponse.json({
       success: true,
       originalCount: originalCourseCount,
-      finalCount,
-      duplicatesCleaned: coursesMerged,
-      namesNormalized: coursesNormalized,
-      teesMerged,
-      teesNormalized,
+      finalCount: finalCourseCount,
+      duplicatesCleaned: courseDeleteResult.rowCount,
+      teesMerged: teeDeleteResult.rowCount,
       log: dedupeLog,
     });
   } catch (error) {
