@@ -360,7 +360,7 @@ export default function ImportPage() {
                     Par *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={coursePar}
                     onChange={(e) => setCoursePar(e.target.value)}
                     className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -371,8 +371,7 @@ export default function ImportPage() {
                     Course Rating
                   </label>
                   <input
-                    type="number"
-                    step="any"
+                    type="text"
                     value={courseRating}
                     onChange={(e) => setCourseRating(e.target.value)}
                     placeholder="e.g., 73.5"
@@ -384,8 +383,7 @@ export default function ImportPage() {
                     Slope Rating
                   </label>
                   <input
-                    type="number"
-                    step="any"
+                    type="text"
                     value={courseSlope}
                     onChange={(e) => setCourseSlope(e.target.value)}
                     placeholder="e.g., 142"
@@ -464,8 +462,7 @@ export default function ImportPage() {
                       Rating
                     </label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
                       value={newTee.rating}
                       onChange={(e) =>
                         setNewTee({
@@ -482,8 +479,7 @@ export default function ImportPage() {
                       Slope
                     </label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
                       value={newTee.slope}
                       onChange={(e) =>
                         setNewTee({
