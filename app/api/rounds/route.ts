@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       scorecard: scorecard ? JSON.stringify(scorecard) : null,
       courseRating: courseRating || course[0].courseRating || null,
       slopeRating: slopeRating || course[0].slopeRating || null,
+      createdAt: new Date(),
     });
 
     const newRound = await db
