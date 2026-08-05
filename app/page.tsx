@@ -38,7 +38,7 @@ export default async function Home() {
             Golf Handicap Tracking
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-2xl">
-            Track your rounds and maintain your handicap using official SAGA calculations. Accurate, reliable, always available.
+            Track your rounds and maintain your handicap. Simple, reliable, always available.
           </p>
 
           {payload ? (
@@ -85,7 +85,7 @@ export default async function Home() {
               Course Database
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Access South African courses with official ratings and slope ratings for accurate scoring.
+              Access South African courses with course ratings and slope data.
             </p>
           </div>
 

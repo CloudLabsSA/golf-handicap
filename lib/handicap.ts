@@ -10,7 +10,7 @@ export function calculateHandicapIndex(rounds: RoundData[]): number {
   // Take last 20 rounds, or all if less than 20
   const recentRounds = rounds.slice(-20);
 
-  // Calculate score differentials using SAGA methodology
+  // Calculate score differentials based on SAGA methodology
   // Differential = (Score - Course Rating) × 113 / Slope Rating
   const differentials = recentRounds.map((round) => {
     return ((round.score - round.courseRating) * 113) / round.slopeRating;
@@ -20,8 +20,8 @@ export function calculateHandicapIndex(rounds: RoundData[]): number {
   differentials.sort((a, b) => a - b);
 
   // Determine number of scores to count based on total rounds
-  // SAGA uses: 1 from 5, 2 from 6-7, 3 from 8-10, 4 from 11-13, 5 from 14-15,
-  //           6 from 16-17, 7 from 18-19, 8 from 20
+  // Following SAGA methodology: 1 from 5, 2 from 6-7, 3 from 8-10, 4 from 11-13, 5 from 14-15,
+  //                             6 from 16-17, 7 from 18-19, 8 from 20
   let scoresToUse = 1;
   if (recentRounds.length >= 6) scoresToUse = 2;
   if (recentRounds.length >= 8) scoresToUse = 3;
