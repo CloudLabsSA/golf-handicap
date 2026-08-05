@@ -5,17 +5,29 @@ import { db } from '@/lib/db';
 export async function POST() {
   try {
     // Run the migration to drop unused columns
-    await db.execute(sql`
-      ALTER TABLE "rounds" DROP CONSTRAINT "rounds_tee_id_course_tees_id_fk"
-    `);
+    try {
+      await db.execute(sql`
+        ALTER TABLE "rounds" DROP CONSTRAINT IF EXISTS "rounds_tee_id_course_tees_id_fk"
+      `);
+    } catch (e) {
+      console.log('Constraint drop failed (may not exist):', e);
+    }
 
-    await db.execute(sql`
-      ALTER TABLE "rounds" DROP COLUMN "tee_id"
-    `);
+    try {
+      await db.execute(sql`
+        ALTER TABLE "rounds" DROP COLUMN IF EXISTS "tee_id"
+      `);
+    } catch (e) {
+      console.log('tee_id drop failed (may not exist):', e);
+    }
 
-    await db.execute(sql`
-      ALTER TABLE "rounds" DROP COLUMN "tee_color"
-    `);
+    try {
+      await db.execute(sql`
+        ALTER TABLE "rounds" DROP COLUMN IF EXISTS "tee_color"
+      `);
+    } catch (e) {
+      console.log('tee_color drop failed (may not exist):', e);
+    }
 
     return NextResponse.json({
       success: true,
