@@ -32,7 +32,7 @@ export function PWARegister() {
     window.addEventListener('appinstalled', handleAppInstalled);
 
     // Check if already installed
-    if (window.navigator.standalone === true) {
+    if ((window.navigator as any).standalone === true) {
       setInstalled(true);
     }
 
