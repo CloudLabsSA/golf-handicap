@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
       const emailResult = await resend.emails.send({
         from: 'noreply@bandicap.co.za',
         to: email,
-        subject: 'Your Golf Handicap Login Link',
+        subject: 'Your Bandicap Login Link',
         html: `
-          <h1>Sign in to Golf Handicap Tracker</h1>
+          <h1>Sign in to Bandicap</h1>
           <p>Click the link below to sign in to your account:</p>
           <a href="${loginUrl}" style="background: #2d5016; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
             Sign In

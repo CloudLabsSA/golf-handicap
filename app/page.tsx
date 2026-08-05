@@ -35,7 +35,7 @@ export default async function Home() {
       <div className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-4xl mx-auto px-4 py-24">
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
-            Golf Handicap Tracking
+            Handicap Tracking
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-2xl">
             Track your rounds and maintain your handicap. Simple, reliable, always available.
