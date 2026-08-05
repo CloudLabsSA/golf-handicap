@@ -15,6 +15,8 @@ interface DedupeResponse {
   finalCount: number;
   duplicatesCleaned: number;
   namesNormalized: number;
+  teesMerged?: number;
+  teesNormalized?: number;
   log: string[];
 }
 
@@ -531,10 +533,10 @@ export default function ImportPage() {
             {dedupeResult && (
               <div className="mt-4 space-y-3">
                 <div className="p-3 bg-slate-50 dark:bg-slate-700 rounded">
-                  <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                  <div className="grid grid-cols-3 gap-2 text-sm mb-3">
                     <div>
                       <p className="text-slate-600 dark:text-slate-400">
-                        Original
+                        Courses Original
                       </p>
                       <p className="font-bold text-slate-900 dark:text-white">
                         {dedupeResult.originalCount}
@@ -542,7 +544,7 @@ export default function ImportPage() {
                     </div>
                     <div>
                       <p className="text-slate-600 dark:text-slate-400">
-                        Final
+                        Courses Final
                       </p>
                       <p className="font-bold text-slate-900 dark:text-white">
                         {dedupeResult.finalCount}
@@ -550,7 +552,7 @@ export default function ImportPage() {
                     </div>
                     <div>
                       <p className="text-slate-600 dark:text-slate-400">
-                        Merged
+                        Courses Merged
                       </p>
                       <p className="font-bold text-slate-900 dark:text-white">
                         {dedupeResult.duplicatesCleaned}
@@ -558,12 +560,32 @@ export default function ImportPage() {
                     </div>
                     <div>
                       <p className="text-slate-600 dark:text-slate-400">
-                        Normalized
+                        Names Normalized
                       </p>
                       <p className="font-bold text-slate-900 dark:text-white">
                         {dedupeResult.namesNormalized}
                       </p>
                     </div>
+                    {dedupeResult.teesMerged !== undefined && (
+                      <div>
+                        <p className="text-slate-600 dark:text-slate-400">
+                          Tees Merged
+                        </p>
+                        <p className="font-bold text-slate-900 dark:text-white">
+                          {dedupeResult.teesMerged}
+                        </p>
+                      </div>
+                    )}
+                    {dedupeResult.teesNormalized !== undefined && (
+                      <div>
+                        <p className="text-slate-600 dark:text-slate-400">
+                          Tees Normalized
+                        </p>
+                        <p className="font-bold text-slate-900 dark:text-white">
+                          {dedupeResult.teesNormalized}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-sm">

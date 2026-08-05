@@ -19,6 +19,15 @@ function toTitleCase(str: string): string {
     .replace(/\bLc\b/gi, 'LC');
 }
 
+function getBaseTeeeName(teeName: string): string {
+  // Remove gender suffixes: (w), (W), (Women), (women), - Ladies, etc
+  return teeName
+    .replace(/\s*\(w\)\s*/gi, '')
+    .replace(/\s*\(women\)\s*/gi, '')
+    .replace(/\s*-\s*ladies\s*/gi, '')
+    .trim();
+}
+
 export async function POST() {
   try {
     // Get all courses
@@ -83,6 +92,77 @@ export async function POST() {
       }
     }
 
+    // Now handle tee deduplication within courses
+    let teesMerged = 0;
+    let teesNormalized = 0;
+
+    const allCourses2 = await db.select().from(courses);
+    const allTees = await db.select().from(tees);
+
+    for (const course of allCourses2) {
+      const courseTees = allTees.filter((t) => t.courseId === course.id);
+
+      // Group tees by base name and gender to find duplicates
+      const teeMap = new Map<
+        string,
+        typeof courseTees
+      >();
+
+      for (const tee of courseTees) {
+        const baseName = getBaseTeeeName(tee.teeName);
+        const key = `${baseName}|${tee.gender || 'M'}`;
+
+        if (!teeMap.has(key)) {
+          teeMap.set(key, []);
+        }
+        teeMap.get(key)!.push(tee);
+      }
+
+      // Merge duplicate tees within this course
+      for (const [key, teeGroup] of teeMap.entries()) {
+        if (teeGroup.length > 1) {
+          const keepTee = teeGroup[0];
+          const baseName = getBaseTeeeName(keepTee.teeName);
+          const cleanTeeName = toTitleCase(baseName);
+
+          dedupeLog.push(
+            `Merging ${teeGroup.length} tees in ${course.name}: ${cleanTeeName}`
+          );
+
+          for (let i = 1; i < teeGroup.length; i++) {
+            const deleteTee = teeGroup[i];
+
+            // Update rounds that reference this tee
+            await db
+              .update(rounds)
+              .set({ teeTeeId: keepTee.id })
+              .where(eq(rounds.teeTeeId, deleteTee.id));
+
+            // Delete the duplicate tee
+            await db.delete(tees).where(eq(tees.id, deleteTee.id));
+            teesMerged++;
+          }
+
+          // Update the kept tee name to clean version
+          if (keepTee.teeName !== cleanTeeName) {
+            await db
+              .update(tees)
+              .set({ teeName: cleanTeeName })
+              .where(eq(tees.id, keepTee.id));
+            teesNormalized++;
+          }
+        } else if (teeGroup[0].teeName !== toTitleCase(getBaseTeeeName(teeGroup[0].teeName))) {
+          // Normalize tee name even if not a duplicate
+          const cleanName = toTitleCase(getBaseTeeeName(teeGroup[0].teeName));
+          await db
+            .update(tees)
+            .set({ teeName: cleanName })
+            .where(eq(tees.id, teeGroup[0].id));
+          teesNormalized++;
+        }
+      }
+    }
+
     const finalCount = await db.select().from(courses);
 
     return NextResponse.json({
@@ -91,6 +171,8 @@ export async function POST() {
       finalCount: finalCount.length,
       duplicatesCleaned: merged,
       namesNormalized: normalized,
+      teesMerged,
+      teesNormalized,
       log: dedupeLog,
     });
   } catch (error) {
