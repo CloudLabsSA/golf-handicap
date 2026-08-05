@@ -1,7 +1,7 @@
 {
   "name": "Bandicap",
   "short_name": "Bandicap",
-  "description": "Golf handicap tracking and scoring",
+  "description": "Golf handicap tracking using SAGA-based calculations",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1f2937",

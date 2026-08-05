@@ -4,7 +4,7 @@ import { PWARegister } from './pwa-register';
 
 export const metadata: Metadata = {
   title: 'Bandicap',
-  description: 'Golf handicap tracking and scoring',
+  description: 'Golf handicap tracking using SAGA-based calculations',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

@@ -73,10 +73,10 @@ export default async function Home() {
 
           <div>
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
-              SAGA Compliant
+              SAGA-Based Calculation
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Official South African Golf Association handicap calculations based on your best performances.
+              Handicap calculations based on SAGA methodology using your best performances.
             </p>
           </div>
 
