@@ -27,16 +27,12 @@ function cleanTeeName(name: string): string {
 
 export async function POST() {
   try {
-    const originalCourseCount = (await db.select().from(courses)).length;
     const dedupeLog: string[] = [];
-    let teesDeleted = 0;
-    let coursesDeleted = 0;
+    let coursesNormalized = 0;
+    let teesNormalized = 0;
 
-    // Step 1: Get all data
+    // Step 1: Normalize course names only (no deletion)
     const allCourses = await db.select().from(courses);
-    const allTees = await db.select().from(tees);
-
-    // Step 2: Normalize course names
     for (const course of allCourses) {
       const normalized = toTitleCase(course.name);
       if (course.name !== normalized) {
@@ -44,65 +40,36 @@ export async function POST() {
           .update(courses)
           .set({ name: normalized })
           .where(eq(courses.id, course.id));
+        coursesNormalized++;
       }
     }
-    dedupeLog.push(`Normalized course names`);
+    dedupeLog.push(`Normalized ${coursesNormalized} course names to title case`);
 
-    // Step 3: Normalize tee names and delete duplicates
-    const freshTees = await db.select().from(tees);
-    const seenTees = new Map<string, string>();
-
-    for (const tee of freshTees) {
+    // Step 2: Normalize tee names only (no deletion)
+    const allTees = await db.select().from(tees);
+    for (const tee of allTees) {
       const cleaned = cleanTeeName(tee.teeName);
       const normalized = toTitleCase(cleaned);
-      const key = `${tee.courseId}|${normalized}`;
-
-      if (seenTees.has(key)) {
-        // Delete this duplicate tee
-        await db.delete(tees).where(eq(tees.id, tee.id));
-        teesDeleted++;
-      } else {
-        // Keep this tee, update name if needed
-        seenTees.set(key, tee.id);
-        if (tee.teeName !== normalized) {
-          await db
-            .update(tees)
-            .set({ teeName: normalized })
-            .where(eq(tees.id, tee.id));
-        }
+      if (tee.teeName !== normalized) {
+        await db
+          .update(tees)
+          .set({ teeName: normalized })
+          .where(eq(tees.id, tee.id));
+        teesNormalized++;
       }
     }
-    dedupeLog.push(`Deleted ${teesDeleted} duplicate tees`);
-
-    // Step 4: Delete duplicate courses
-    const freshCourses = await db.select().from(courses);
-    const seenCourses = new Map<string, string>();
-
-    for (const course of freshCourses) {
-      if (seenCourses.has(course.name)) {
-        // Delete this duplicate course
-        await db.delete(courses).where(eq(courses.id, course.id));
-        coursesDeleted++;
-      } else {
-        seenCourses.set(course.name, course.id);
-      }
-    }
-    dedupeLog.push(`Deleted ${coursesDeleted} duplicate courses`);
-
-    const finalCourseCount = (await db.select().from(courses)).length;
+    dedupeLog.push(`Normalized ${teesNormalized} tee names to title case`);
 
     return NextResponse.json({
       success: true,
-      originalCount: originalCourseCount,
-      finalCount: finalCourseCount,
-      duplicatesCleaned: coursesDeleted,
-      teesMerged: teesDeleted,
+      coursesNormalized,
+      teesNormalized,
       log: dedupeLog,
     });
   } catch (error) {
-    console.error('Dedupe error:', error);
+    console.error('Normalize error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Dedupe failed' },
+      { error: error instanceof Error ? error.message : 'Normalization failed' },
       { status: 500 }
     );
   }
