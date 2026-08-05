@@ -38,13 +38,15 @@ export async function GET(
       .innerJoin(courses, eq(rounds.courseId, courses.id))
       .where(eq(rounds.userId, user[0].id));
 
-    // Calculate handicap
-    const roundData = userRounds.map((r) => ({
-      score: r.score,
-      coursePar: r.coursePar,
-      courseRating: r.courseRating || undefined,
-      slopeRating: r.slopeRating || undefined,
-    }));
+    // Calculate handicap (only use rounds with complete rating data)
+    const roundData = userRounds
+      .filter((r) => r.courseRating !== null && r.slopeRating !== null)
+      .map((r) => ({
+        score: r.score,
+        coursePar: r.coursePar,
+        courseRating: r.courseRating!,
+        slopeRating: r.slopeRating!,
+      }));
 
     const handicapIndex = calculateHandicapIndex(roundData);
 
