@@ -6,12 +6,16 @@ export async function POST(request: NextRequest) {
     // Delete all rounds first (they reference courses)
     const roundsResult = await sql`DELETE FROM "rounds" RETURNING "id";`;
 
+    // Delete all tees (cascade from courses, but do explicitly)
+    const teesResult = await sql`DELETE FROM "tees" RETURNING "id";`;
+
     // Delete all courses
     const coursesResult = await sql`DELETE FROM "courses" RETURNING "id", "name";`;
 
     return NextResponse.json({
       success: true,
       roundsDeleted: roundsResult.rowCount,
+      teesDeleted: teesResult.rowCount,
       coursesDeleted: coursesResult.rowCount,
       courses: coursesResult.rows,
     });
