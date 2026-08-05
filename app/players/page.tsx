@@ -35,22 +35,22 @@ export default function PlayersPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-amber-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+      <header className="bg-gradient-to-r from-teal-700 to-teal-800 dark:from-teal-900 dark:to-teal-950 border-b-4 border-yellow-600">
+        <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Players
+              <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Leaderboard
               </h1>
-              <p className="text-slate-600 dark:text-slate-400">
+              <p className="text-teal-100 mt-1">
                 Browse all golfers and their handicaps
               </p>
             </div>
             <Link
               href="/dashboard"
-              className="text-green-700 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+              className="text-yellow-300 hover:text-yellow-100 font-semibold transition"
             >
               ← Back to Dashboard
             </Link>
@@ -59,10 +59,10 @@ export default function PlayersPage() {
       </header>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-12">
         {loading && (
           <div className="text-center text-slate-600 dark:text-slate-400">
-            Loading players...
+            Loading leaderboard...
           </div>
         )}
 
@@ -73,8 +73,8 @@ export default function PlayersPage() {
         )}
 
         {!loading && players.length === 0 && (
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-8 text-center">
-            <p className="text-slate-600 dark:text-slate-400">
+          <div className="bg-white dark:bg-slate-800 rounded-lg border-b-4 border-teal-700 shadow-lg p-12 text-center">
+            <p className="text-slate-600 dark:text-slate-400 text-lg">
               No players yet. Be the first!
             </p>
           </div>
@@ -88,35 +88,35 @@ export default function PlayersPage() {
                 <Link
                   key={player.user.email}
                   href={`/players/${encodeURIComponent(player.user.email)}`}
-                  className="bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-lg transition p-6"
+                  className="bg-white dark:bg-slate-800 rounded-lg border-b-4 border-teal-700 shadow-md hover:shadow-xl transition p-6"
                 >
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between mb-6">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-green-700 text-white flex items-center justify-center font-bold">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 text-white flex items-center justify-center font-bold text-lg">
                           {idx + 1}
                         </div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
                           {player.user.name}
                         </h3>
                       </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 ml-13">
                         {player.user.email}
                       </p>
                     </div>
                   </div>
 
-                  <div className="bg-green-50 dark:bg-green-900/30 rounded p-4 mb-4">
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                  <div className="bg-gradient-to-br from-teal-50 to-amber-50 dark:from-teal-900/30 dark:to-amber-900/10 rounded p-4 mb-4">
+                    <p className="text-xs font-bold text-teal-700 dark:text-teal-300 mb-2 uppercase tracking-wider">
                       Handicap Index
                     </p>
-                    <p className="text-3xl font-bold text-green-700 dark:text-green-400">
+                    <p className="text-4xl font-bold text-teal-900 dark:text-teal-100" style={{ fontFamily: "'Playfair Display', serif" }}>
                       {player.handicapIndex.toFixed(1)}
                     </p>
                   </div>
 
                   <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {player.roundCount} round{player.roundCount !== 1 ? 's' : ''}
+                    {player.roundCount} round{player.roundCount !== 1 ? 's' : ''} played
                   </p>
                 </Link>
               ))}

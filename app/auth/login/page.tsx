@@ -34,27 +34,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-teal-50 dark:from-slate-900 dark:to-slate-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-            ⛳ Bandicap
+          <h1 className="text-5xl font-bold text-teal-900 dark:text-teal-100 mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+            ⛳ BANDICAP
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-teal-700 dark:text-teal-300 font-medium">
             Sign in to your account
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-lg border-b-4 border-teal-700 shadow-xl p-8">
           {sent ? (
             <div className="space-y-4">
-              <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
-                <p className="font-semibold text-emerald-900 dark:text-emerald-100 mb-2">
+              <div className="bg-teal-50 dark:bg-teal-900/30 border-l-4 border-teal-700 rounded p-4">
+                <p className="font-semibold text-teal-900 dark:text-teal-100 mb-2">
                   ✓ Check your email
                 </p>
-                <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                <p className="text-sm text-teal-700 dark:text-teal-300">
                   We've sent a sign-in link to <strong>{email}</strong>
                 </p>
               </div>
@@ -66,21 +66,21 @@ export default function LoginPage() {
                   setSent(false);
                   setEmail('');
                 }}
-                className="w-full text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium transition"
+                className="w-full text-teal-700 dark:text-teal-300 hover:text-teal-900 dark:hover:text-teal-100 font-medium transition"
               >
                 ← Sign in with different email
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 text-red-800 dark:text-red-200 text-sm">
+                <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-600 rounded p-4 text-red-800 dark:text-red-200 text-sm">
                   {error}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-semibold text-teal-900 dark:text-teal-100 mb-3 uppercase tracking-wide">
                   Email Address
                 </label>
                 <input
@@ -90,14 +90,14 @@ export default function LoginPage() {
                   placeholder="you@example.com"
                   required
                   autoFocus
-                  className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                  className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
+                className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-bold py-3 rounded transition duration-200 shadow-lg hover:shadow-xl"
               >
                 {loading ? 'Sending link...' : 'Send Sign-In Link'}
               </button>
@@ -107,15 +107,15 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
-          <Link href="/" className="hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition">
+          <Link href="/" className="hover:text-teal-700 dark:hover:text-teal-300 font-medium transition">
             ← Back to home
           </Link>
         </div>
 
         {/* Info */}
         {!sent && (
-          <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-            <p className="text-xs text-slate-600 dark:text-slate-400 text-center">
+          <div className="mt-8 p-4 bg-teal-50 dark:bg-teal-900/20 rounded border-l-4 border-teal-700">
+            <p className="text-xs text-teal-800 dark:text-teal-200 text-center font-medium">
               🔐 We'll send you a secure link to sign in. No password needed.
             </p>
           </div>
