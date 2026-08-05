@@ -20,6 +20,10 @@ export const courses = pgTable(
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     location: text('location'),
+    par: integer('par'),
+    courseRating: real('course_rating'),
+    slopeRating: real('slope_rating'),
+    holes: integer('holes').default(18),
     createdAt: timestamp('created_at').defaultNow(),
   }
 );
