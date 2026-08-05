@@ -185,10 +185,27 @@ export default function DashboardPage() {
                   const strokeDiff = round.score - round.coursePar;
                   const isUnder = strokeDiff < 0;
 
+                  const handleDelete = async () => {
+                    if (!confirm(`Delete this round at ${round.courseName}?`)) return;
+
+                    try {
+                      const response = await fetch(`/api/rounds/${round.id}/delete`, {
+                        method: 'DELETE',
+                      });
+                      if (response.ok) {
+                        window.location.reload();
+                      } else {
+                        alert('Failed to delete round');
+                      }
+                    } catch (error) {
+                      alert('Error deleting round');
+                    }
+                  };
+
                   return (
                     <div
                       key={round.id}
-                      className="p-4 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+                      className="p-4 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group"
                     >
                       <div>
                         <p className="font-semibold text-slate-900 dark:text-white">
@@ -202,17 +219,26 @@ export default function DashboardPage() {
                           })}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                          {round.score}
-                        </p>
-                        <p className={`text-sm font-medium ${
-                          isUnder
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-orange-600 dark:text-orange-400'
-                        }`}>
-                          Par {round.coursePar} {isUnder ? '−' : '+'}{Math.abs(strokeDiff)}
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-3xl font-bold text-slate-900 dark:text-white">
+                            {round.score}
+                          </p>
+                          <p className={`text-sm font-medium ${
+                            isUnder
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-orange-600 dark:text-orange-400'
+                          }`}>
+                            Par {round.coursePar} {isUnder ? '−' : '+'}{Math.abs(strokeDiff)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleDelete}
+                          className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition opacity-0 group-hover:opacity-100"
+                          title="Delete round"
+                        >
+                          ✕
+                        </button>
                       </div>
                     </div>
                   );
