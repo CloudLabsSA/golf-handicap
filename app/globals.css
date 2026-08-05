@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Lora:wght@400;500;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,33 +10,4 @@
 
 html {
   scroll-behavior: smooth;
-}
-
-:root {
-  --masters-green: #155e75;
-  --masters-dark-green: #0c4a5c;
-  --masters-light-green: #06b6d4;
-  --masters-gold: #d4af37;
-  --masters-cream: #faf8f3;
-  --masters-text: #1f2937;
-}
-
-body {
-  background-color: var(--masters-cream);
-  color: var(--masters-text);
-  font-family: 'Lora', serif;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-
-/* Dark mode overrides */
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #0f172a;
-    color: #f1f5f9;
-  }
 }

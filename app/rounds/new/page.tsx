@@ -171,20 +171,19 @@ export default function NewRoundPage() {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-gradient-to-r from-teal-700 to-teal-800 dark:from-teal-900 dark:to-teal-950 border-b-4 border-yellow-600">
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+      <header className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Record Round
           </h1>
-          <p className="text-teal-100 mt-1">Enter your score and round details</p>
         </div>
       </header>
 
       {/* Form */}
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-lg border-b-4 border-teal-700 shadow-lg p-8 space-y-8">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <form onSubmit={handleSubmit} className="bg-slate-50 dark:bg-slate-900 rounded p-6 space-y-6">
           {error && (
             <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-3 text-red-800 dark:text-red-200 text-sm">
               {error}
@@ -194,7 +193,7 @@ export default function NewRoundPage() {
           {/* Course Selection */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-teal-900 dark:text-teal-100 mb-3 uppercase tracking-wide">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Course
               </label>
               {coursesLoading ? (
@@ -234,7 +233,7 @@ export default function NewRoundPage() {
             {/* Tee Selection */}
             {selectedCourse && tees.length > 0 && (
               <div>
-                <label className="block text-sm font-semibold text-teal-900 dark:text-teal-100 mb-3 uppercase tracking-wide">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Tee
                 </label>
                 <select
@@ -314,7 +313,7 @@ export default function NewRoundPage() {
             {/* Front/Back 9 Selection */}
             {holes === 9 && (
               <div>
-                <label className="block text-sm font-semibold text-teal-900 dark:text-teal-100 mb-3 uppercase tracking-wide">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Which 9?
                 </label>
                 <select
@@ -363,14 +362,14 @@ export default function NewRoundPage() {
             <button
               type="submit"
               disabled={loading || !selectedCourseId || !selectedTeeId || !score}
-              className="flex-1 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-slate-900 font-bold py-3 rounded transition shadow-lg"
+              className="flex-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium py-2 rounded hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 transition"
             >
               {loading ? 'Saving...' : 'Save Round'}
             </button>
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 border-2 border-teal-700 text-teal-700 dark:text-teal-300 font-semibold py-3 rounded hover:bg-teal-50 dark:hover:bg-teal-900/20 transition"
+              className="flex-1 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium py-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition"
             >
               Cancel
             </button>

@@ -24,11 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="theme-color" content="#155e75" />
+        <meta name="theme-color" content="#1f2937" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className="bg-amber-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50">
+      <body className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50">
         <PWARegister />
         {children}
       </body>

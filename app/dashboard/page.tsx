@@ -53,7 +53,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-amber-50 dark:bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
         <div className="text-slate-600 dark:text-slate-300">Loading...</div>
       </div>
     );
@@ -61,8 +61,8 @@ export default function DashboardPage() {
 
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-amber-50 dark:bg-slate-900 p-4">
-        <div className="max-w-2xl mx-auto bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-800 dark:text-red-200">
+      <div className="min-h-screen bg-white dark:bg-slate-950 p-4">
+        <div className="max-w-2xl mx-auto bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded p-4 text-red-800 dark:text-red-200">
           <p>{error || 'Failed to load user data'}</p>
           <Link href="/auth/login" className="text-red-700 dark:text-red-300 hover:underline">
             Try logging in again
@@ -77,106 +77,106 @@ export default function DashboardPage() {
     : '—';
 
   return (
-    <div className="min-h-screen bg-amber-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-gradient-to-r from-teal-700 to-teal-800 dark:from-teal-900 dark:to-teal-950 border-b-4 border-yellow-600">
-        <div className="max-w-6xl mx-auto px-4 py-8 flex justify-between items-center">
+      <header className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
-              ⛳ BANDICAP
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+              Bandicap
             </h1>
-            <p className="text-teal-100 mt-1">
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
               Welcome back, {user.user.name}
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <Link
               href="/players"
-              className="text-teal-50 hover:text-yellow-300 font-medium transition"
+              className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium transition"
             >
               Leaderboard
             </Link>
             <Link
               href="/rounds/new"
-              className="bg-yellow-600 hover:bg-yellow-700 text-slate-900 px-6 py-2 rounded font-semibold transition shadow-lg"
+              className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2 rounded font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition"
             >
-              + Add Round
+              Add Round
             </Link>
             <button
               onClick={async () => {
                 await fetch('/api/auth/logout', { method: 'POST' });
                 router.push('/');
               }}
-              className="text-teal-100 hover:text-yellow-300 font-medium transition"
+              className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition"
             >
-              ↪ Sign Out
+              Sign Out
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Handicap Index */}
-          <div className="bg-white dark:bg-slate-800 border-l-4 border-teal-700 rounded-lg p-8 shadow-md hover:shadow-lg transition">
-            <p className="text-teal-700 dark:text-teal-400 text-xs font-bold uppercase tracking-wider mb-3">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded p-6 border border-slate-200 dark:border-slate-800">
+            <p className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wide mb-3">
               Handicap Index
             </p>
-            <h2 className="text-6xl font-bold text-teal-900 dark:text-teal-100" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-5xl font-bold text-slate-900 dark:text-white">
               {user.handicapIndex.toFixed(1)}
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-4">
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-3">
               {user.roundCount} round{user.roundCount !== 1 ? 's' : ''} recorded
             </p>
           </div>
 
           {/* Average Score */}
-          <div className="bg-white dark:bg-slate-800 border-l-4 border-yellow-600 rounded-lg p-8 shadow-md hover:shadow-lg transition">
-            <p className="text-yellow-700 dark:text-yellow-400 text-xs font-bold uppercase tracking-wider mb-3">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded p-6 border border-slate-200 dark:border-slate-800">
+            <p className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wide mb-3">
               Average Score
             </p>
-            <h2 className="text-6xl font-bold text-yellow-900 dark:text-yellow-100" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-5xl font-bold text-slate-900 dark:text-white">
               {avgScore}
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-4">
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-3">
               Across all rounds
             </p>
           </div>
 
           {/* Rounds Played */}
-          <div className="bg-white dark:bg-slate-800 border-l-4 border-teal-600 rounded-lg p-8 shadow-md hover:shadow-lg transition">
-            <p className="text-teal-600 dark:text-teal-300 text-xs font-bold uppercase tracking-wider mb-3">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded p-6 border border-slate-200 dark:border-slate-800">
+            <p className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wide mb-3">
               Total Rounds
             </p>
-            <h2 className="text-6xl font-bold text-teal-800 dark:text-teal-200" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <h2 className="text-5xl font-bold text-slate-900 dark:text-white">
               {user.roundCount}
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-4">
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-3">
               Rounds completed
             </p>
           </div>
         </div>
 
         {/* Recent Rounds */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg border-b-4 border-teal-700 shadow-lg overflow-hidden">
-          <div className="p-8 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-teal-50 to-amber-50 dark:from-slate-700 dark:to-slate-800">
-            <h3 className="text-2xl font-bold text-teal-900 dark:text-teal-100" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <div className="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
               Recent Rounds
             </h3>
           </div>
 
           {user.rounds.length === 0 ? (
-            <div className="p-16 text-center">
-              <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg">
-                No rounds yet. Time to hit the course!
+            <div className="p-12 text-center">
+              <p className="text-slate-600 dark:text-slate-400 mb-6">
+                No rounds recorded yet.
               </p>
               <Link
                 href="/rounds/new"
-                className="inline-block bg-yellow-600 hover:bg-yellow-700 text-slate-900 px-8 py-3 rounded font-semibold transition shadow-lg"
+                className="inline-block bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2 rounded font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition"
               >
-                Record Your First Round
+                Record First Round
               </Link>
             </div>
           ) : (
