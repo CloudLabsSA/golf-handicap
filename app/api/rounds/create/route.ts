@@ -73,13 +73,12 @@ export async function POST(request: NextRequest) {
       id: roundId,
       userId: user[0].id,
       courseId: teeData.courseId,
-      teeTeeId: teeId,
-      teeColor: teeData.teeColor,
       holes,
       score,
       courseRating,
       slopeRating,
       date: new Date(date),
+      createdAt: new Date(),
     });
 
     const newRound = await db
