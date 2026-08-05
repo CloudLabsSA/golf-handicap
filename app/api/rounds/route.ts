@@ -57,11 +57,14 @@ export async function POST(request: NextRequest) {
       id: roundId,
       userId: user[0].id,
       courseId: course[0].id,
+      teeTeeId: null,
+      teeColor: null,
+      holes,
       score,
       date: new Date(date),
       scorecard: scorecard ? JSON.stringify(scorecard) : null,
-      courseRating: courseRating || course[0].courseRating || undefined,
-      slopeRating: slopeRating || course[0].slopeRating || undefined,
+      courseRating: courseRating || course[0].courseRating || null,
+      slopeRating: slopeRating || course[0].slopeRating || null,
     });
 
     const newRound = await db
